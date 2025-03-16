@@ -7,7 +7,6 @@ import {
 export const createCard = (
   cardData, {
     cardTemplate,
-    handleLikeCard,
     handleDeleteCard,
     handleImageClick,
     userId
@@ -31,7 +30,6 @@ export const createCard = (
   cardLikeCounter.textContent = (cardData.likes || []).length;
 
   // Проверяем, принадлежит ли карточка текущему пользователю
-  // Проверяем, принадлежит ли карточка текущему пользователю 
   if (cardData.owner._id === userId) {
     cardDeleteButton.classList.remove('card__delete-button_disabled');
     cardDeleteButton.addEventListener('click', () => handleDeleteCard(cardElement, cardData));
@@ -39,14 +37,13 @@ export const createCard = (
     cardDeleteButton.classList.add('card__delete-button_disabled');
   }
 
-
+  // Используем внутреннюю функцию handleLikeCard из этого модуля
   cardLikeButton.addEventListener('click', () => handleLikeCard(cardData._id, cardLikeButton));
 
   cardImage.addEventListener('click', () => handleImageClick(cardData));
 
   return cardElement;
 };
-
 
 // Обработчик лайка карточки
 export function handleLikeCard(cardId, likeButton) {
@@ -56,7 +53,8 @@ export function handleLikeCard(cardId, likeButton) {
   likePromise
     .then((updatedCard) => {
       likeButton.classList.toggle('card__like-button_is-active', !isLiked);
-      const likeCounter = likeButton.nextElementSibling;
+      // Вместо nextElementSibling используем closest для надёжного поиска счётчика лайков
+      const likeCounter = likeButton.closest('.card').querySelector('.card__like-counter');
       likeCounter.textContent = updatedCard.likes.length;
     })
     .catch((err) => console.error('Ошибка при обновлении лайка:', err));
