@@ -81,15 +81,8 @@ const renderCard = (cardData, method = 'prepend') => {
     userId 
   }); 
 
-  // Проверяем, ставил ли пользователь лайк 
-  const likeButton = cardElement.querySelector('.card__like-button'); 
-  if (cardData.likes.some(user => user._id === userId)) { 
-    likeButton.classList.add('card__like-button_is-active'); 
-  } 
-
-  // Обновляем счетчик лайков 
-  const likeCounter = cardElement.querySelector('.card__like-counter'); 
-  likeCounter.textContent = cardData.likes.length; 
+  // Логика лайка полностью перенесена в модуль card, поэтому здесь больше не нужно
+  // проверять состояние лайка и обновлять счетчик 
 
   if (cardElement) { 
     cardContainer[method](cardElement); 

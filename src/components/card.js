@@ -1,16 +1,8 @@
-import {
-  addLike,
-  removeLike,
-  deleteCard
-} from './api.js';
+import { addLike, removeLike, deleteCard } from './api.js';
 
 export const createCard = (
-  cardData, {
-    cardTemplate,
-    handleDeleteCard,
-    handleImageClick,
-    userId
-  }
+  cardData,
+  { cardTemplate, handleDeleteCard, handleImageClick, userId }
 ) => {
   if (!cardData._id || !cardData.name || !cardData.link) {
     return;
@@ -27,9 +19,16 @@ export const createCard = (
   cardImage.src = cardData.link;
   cardImage.alt = cardData.name;
   cardTitle.textContent = cardData.name;
+
+  // Устанавливаем начальное значение счётчика лайков
   cardLikeCounter.textContent = (cardData.likes || []).length;
 
-  // Проверяем, принадлежит ли карточка текущему пользователю
+  // Проверяем, ставил ли пользователь лайк, и обновляем класс кнопки
+  if (cardData.likes.some(user => user._id === userId)) {
+    cardLikeButton.classList.add('card__like-button_is-active');
+  }
+
+  // Настраиваем удаление карточки, если она принадлежит текущему пользователю
   if (cardData.owner._id === userId) {
     cardDeleteButton.classList.remove('card__delete-button_disabled');
     cardDeleteButton.addEventListener('click', () => handleDeleteCard(cardElement, cardData));
@@ -37,30 +36,30 @@ export const createCard = (
     cardDeleteButton.classList.add('card__delete-button_disabled');
   }
 
-  // Используем внутреннюю функцию handleLikeCard из этого модуля
-  cardLikeButton.addEventListener('click', () => handleLikeCard(cardData._id, cardLikeButton));
+  // Обработчик клика по кнопке лайка – логика лайка также находится здесь
+  cardLikeButton.addEventListener('click', () => handleLikeCard(cardData._id, cardLikeButton, cardElement));
 
   cardImage.addEventListener('click', () => handleImageClick(cardData));
 
   return cardElement;
 };
 
-// Обработчик лайка карточки
-export function handleLikeCard(cardId, likeButton) {
+// Функция обработки лайка карточки
+export function handleLikeCard(cardId, likeButton, cardElement) {
   const isLiked = likeButton.classList.contains('card__like-button_is-active');
   const likePromise = isLiked ? removeLike(cardId) : addLike(cardId);
 
   likePromise
     .then((updatedCard) => {
       likeButton.classList.toggle('card__like-button_is-active', !isLiked);
-      // Вместо nextElementSibling используем closest для надёжного поиска счётчика лайков
-      const likeCounter = likeButton.closest('.card').querySelector('.card__like-counter');
+      // Находим элемент счётчика внутри карточки
+      const likeCounter = cardElement.querySelector('.card__like-counter');
       likeCounter.textContent = updatedCard.likes.length;
     })
     .catch((err) => console.error('Ошибка при обновлении лайка:', err));
 }
 
-// Обработчик для удаления карточки
+// Обработчик удаления карточки
 export const handleDeleteCard = (cardElement, cardData) => {
   deleteCard(cardData._id)
     .then(() => {
